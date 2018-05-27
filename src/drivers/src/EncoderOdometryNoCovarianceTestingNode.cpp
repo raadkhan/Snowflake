@@ -10,14 +10,12 @@
 #include <sb_utils.h>
 
 void encoderOdometryCallback(const std_msgs::String::ConstPtr&);
-void republishMsg(std::string);
-
 ros::Publisher encoder_odometry_no_covariance_publisher;
 
 int main (int argc, char **argv) {
 
     // Setup NodeHandles
-    ros::init(argc, argv, "encoder_to_odometry_no_covar");
+    ros::init(argc, argv, "encoder_to_odometry_test");
     ros::NodeHandle nh;
     ros::NodeHandle private_nh("~");
 
@@ -46,7 +44,6 @@ void encoderOdometryCallBack(const nav_msgs::Odometry::ConstPtr& subscribed_odom
     odom_no_covariance.child_frame_id = subscribed_odom->child_frame_id;
     odom_no_covariance.pose.pose = subscribed_odom->pose.pose;
     odom_no_covariance.twist.twist = subscribed_odom->twist.twist;
-
 
     encoder_odometry_no_covariance_publisher.publish(odom_no_covariance);
 
