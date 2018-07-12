@@ -82,6 +82,7 @@ void LaneFollow::laneFollowCallback(const sensor_msgs::Image::ConstPtr &filtered
     // generate left and right lane points in the filtered image
     // in the cartesian coordinate frame
     std::vector<std::vector<cv::Point2d>> filtered_lane_points =
+
     ld.getLanePoints(filtered_image, 0, 0);
 
     drawWindows(filtered_image,
