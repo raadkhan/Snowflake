@@ -10,13 +10,16 @@ using namespace cv;
 using namespace cv_bridge;
 
 HSVFilterNode::HSVFilterNode(int argc, char** argv, std::string node_name) {
-    displayWindowName  = "Snowbots - HSVFilterNode";
-    receivedFirstImage = false;
-
     // ROS
     ros::init(argc, argv, node_name);
     ros::NodeHandle nh;
     ros::NodeHandle private_nh("~");
+    image_window_moved = false;
+    calibration_window_moved = false;
+
+    SB_getParam(private_nh, "display_window_name", displayWindowName, (std::string) "Snowbots - HSVFilterNode");
+    receivedFirstImage = false;
+
 
     // Set topics
     std::string image_topic  = "vision/hsv_input_image";
@@ -136,7 +139,10 @@ void HSVFilterNode::updateFilter() {
     if (isCalibratingManually)
     {
         filter.manualCalibration();
-        filter.moveWindow(calibration_window_x_pos, calibration_window_y_pos);
+        if (!calibration_window_moved) {
+            filter.moveWindow(calibration_window_x_pos, calibration_window_y_pos);
+            calibration_window_moved = true;
+        }
     }
 
     int a = waitKey(20);
@@ -186,5 +192,8 @@ void HSVFilterNode::showRawAndFilteredImageWindow() {
     resize(filterOutputBGR, image2Roi, sub_window_size);
 
     cv::imshow(displayWindowName, main_image);
-    cv::moveWindow(displayWindowName, image_window_x_pos, image_window_y_pos);
+    if (!image_window_moved) {
+        cv::moveWindow(displayWindowName, image_window_x_pos, image_window_y_pos);
+        image_window_moved = true;
+    }
 }

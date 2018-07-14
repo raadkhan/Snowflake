@@ -11,7 +11,7 @@ using namespace cv;
 using namespace cv_bridge;
 
 IPMFilterNode::IPMFilterNode(int argc, char** argv, std::string node_name) {
-
+    window_moved = false;
     receivedFirstImage = false;
 
     // Set topics
@@ -72,7 +72,10 @@ const sensor_msgs::ImageConstPtr& msg) {
     std::string displayWindowName  = "Snowbots - IPMFilterNode";
     namedWindow(displayWindowName, CV_WINDOW_AUTOSIZE);
     imshow(displayWindowName, IPMFilteredImage);
-    moveWindow(displayWindowName, 50, 50);
+    if (!window_moved) {
+        moveWindow(displayWindowName, 50, 50);
+        window_moved = true;
+    }
     waitKey(100);
 
     // Outputs the image
@@ -80,7 +83,6 @@ const sensor_msgs::ImageConstPtr& msg) {
     cv_bridge::CvImage(std_msgs::Header(), "mono8", IPMFilteredImage)
     .toImageMsg();
 
-    std::cout << output_message->height << std::endl;
     ipm_filter_pub.publish(output_message);
 }
 

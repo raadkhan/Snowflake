@@ -89,6 +89,8 @@ class IPMFilterNode {
     IPMFilter* ipmFilter;
     float ipm_base_width, ipm_top_width, ipm_base_displacement,
     ipm_top_displacement;
+
+    bool window_moved;
 };
 
 #endif
