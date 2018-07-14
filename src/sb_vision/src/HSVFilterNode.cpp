@@ -54,6 +54,8 @@ HSVFilterNode::HSVFilterNode(int argc, char** argv, std::string node_name) {
     SB_getParam(
             private_nh, "calibration_window_y_pos", calibration_window_y_pos, 0);
 
+    SB_getParam(private_nh, "image_update_delay", image_update_delay, 100);
+
 
     setUpFilter();
 }
@@ -145,7 +147,7 @@ void HSVFilterNode::updateFilter() {
         }
     }
 
-    int a = waitKey(20);
+    int a = waitKey(image_update_delay);
     // Press 'm' to calibrate manually, press m again to save
     if (a == 109) {
         if (!isCalibratingManually) {

@@ -1,0 +1,36 @@
+<launch>
+
+    <!-- Launch the HSV Filter -->
+    <node name="green_light_filter" pkg="sb_vision" type="hsv_filter" output="screen">
+        <rosparam param="update_frequency"> 5 </rosparam>
+        
+        <rosparam param="show_image_window"> true </rosparam>
+        <rosparam param="image_window_x_pos"> 0 </rosparam>
+        <rosparam param="image_window_y_pos"> 0 </rosparam>
+        <rosparam param="display_window_name"> "Snowbots - Green Filter" </rosparam>
+        <rosparam param="image_update_delay"> 100 </rosparam>
+
+        <rosparam param="show_calibration_window"> true </rosparam>
+        <rosparam param="calibration_window_x_pos"> 1500 </rosparam>
+        <rosparam param="calibration_window_y_pos"> 0 </rosparam>
+
+        <rosparam param="config_file" subst_value="True"> "$(find lane_follow_iarrc)/launch/green_light_filter.txt"</rosparam>
+                    
+        <!-- Input topic -->
+        <remap from="vision/hsv_input_image" to="robot/camera1/raw_image"/>
+        <!-- Output topic --> 
+        <remap from="vision/hsv_output_image" to="vision/green_light_image"/>
+    </node>
+
+    <!-- Initiailise stoplight detection node -->
+    <node name="stoplight_detection" pkg="sb_vision" type="circle_detection" output="screen">
+        <rosparam param="minimum_target_radius"> 50 </rosparam>
+        <rosparam param="show_image_window"> false </rosparam>
+        <rosparam param="image_update_delay"> 100 </rosparam>
+                
+        <!-- Input topic -->
+        <remap from="/robot/vision/filtered_image" to="vision/green_light_image"/>
+        <!-- Output topic -->
+        <remap from="/robot/vision/activity_detected" to="/robot/vision/activity_detected"/>
+    </node>
+</launch>
