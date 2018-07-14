@@ -24,7 +24,7 @@ LaneFollow::LaneFollow(int argc, char** argv, std::string node_name) {
 
     // setup topics
     std::string input_topic  = "vision/complete_filtered_image";
-    std::string output_topic = "lane_follow/recommended_steer";
+    std::string output_topic = "/cmd_vel";
     std::string traffic_light_topic = "/robot/vision/activity_detected";
 
     uint32_t queue_size = 1;
@@ -36,7 +36,7 @@ LaneFollow::LaneFollow(int argc, char** argv, std::string node_name) {
     SB_getParam(private_nh,
                 "minimum_green_count_recognised",
                 minimum_green_recognised_count,
-                10);
+                -1);
 
     // set up subscriber
     filtered_image_sub = it.subscribe(
@@ -150,7 +150,7 @@ void LaneFollow::laneFollowCallback(const sensor_msgs::Image::ConstPtr &filtered
             stay_in_lane.angular.z = 0;
             stay_in_lane.linear.x  = 0;
         }
-
+std::cout << "PUBLISHING A MSG" << std::endl;
         // publish the recommended steering output to stay in lane
         stay_in_lane_pub.publish(stay_in_lane);
     }
