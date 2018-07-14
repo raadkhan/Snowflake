@@ -51,7 +51,7 @@ void ImageMergerNode::firstImageCallBack(
     if (!received_first_image) {
         ROS_INFO("First image received! (Merger)");
         received_first_image = true;
-        moveWindow(display_window_name, 0, image->height * 2);
+        moveWindow(display_window_name, 1500, 600);
     }
 
     // Update the first image

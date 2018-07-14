@@ -50,7 +50,7 @@
     </node>
 
     <node name="image_merger" pkg="sb_vision" type="image_merger" output="screen">
-
+        <rosparam param="show_image_window"> true </rosparam>
         <rosparam param="image_update_delay"> 100 </rosparam>        
         <!-- Input topics -->
         <remap from="robot/vision/first_image" to="vision/white_line_image"/>
