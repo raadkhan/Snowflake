@@ -96,6 +96,8 @@ class CircleDetection {
 
     // Show window for debugging purposes
     bool show_window;
+
+    int image_update_delay;
 };
 
 #endif

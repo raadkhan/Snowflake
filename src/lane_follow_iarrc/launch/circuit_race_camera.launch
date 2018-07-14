@@ -14,11 +14,14 @@
         <rosparam param="image_window_x_pos"> 0 </rosparam>
         <rosparam param="image_window_y_pos"> 0 </rosparam>
         <rosparam param="display_window_name"> "Snowbots - White Filter" </rosparam>
-        
+        <rosparam param="image_update_delay"> 100 </rosparam>
+
         <rosparam param="show_calibration_window"> true </rosparam>
         <rosparam param="calibration_window_x_pos"> 1500 </rosparam>
         <rosparam param="calibration_window_y_pos"> 0 </rosparam>
-            
+        
+        <rosparam param="config_file" subst_value="True"> "$(find lane_follow_iarrc)/launch/white_line_filter.txt" </rosparam>
+                    
         <!-- Input topic -->
         <remap from="vision/hsv_input_image" to="/robot/camera1/raw_image"/>
         <!-- Output topic --> 
@@ -32,10 +35,14 @@
         <rosparam param="image_window_x_pos"> 0 </rosparam>
         <rosparam param="image_window_y_pos"> 480 </rosparam>
         <rosparam param="display_window_name"> "Snowbots - Yellow Filter" </rosparam>
-        
+        <rosparam param="image_update_delay"> 100 </rosparam>
+
         <rosparam param="show_calibration_window"> true </rosparam>
         <rosparam param="calibration_window_x_pos"> 1500 </rosparam>
         <rosparam param="calibration_window_y_pos"> 480 </rosparam>
+        
+        <rosparam param="config_file" subst_value="True"> "$(find lane_follow_iarrc)/launch/yellow_line_filter.txt" </rosparam>
+
         <!-- Input topic -->
         <remap from="vision/hsv_input_image" to="/robot/camera1/raw_image"/>
         <!-- Output topic -->
@@ -43,7 +50,8 @@
     </node>
 
     <node name="image_merger" pkg="sb_vision" type="image_merger" output="screen">
-        
+        <rosparam param="show_image_window"> true </rosparam>
+        <rosparam param="image_update_delay"> 100 </rosparam>        
         <!-- Input topics -->
         <remap from="robot/vision/first_image" to="vision/white_line_image"/>
         <remap from="robot/vision/second_image" to="vision/yellow_line_image"/>

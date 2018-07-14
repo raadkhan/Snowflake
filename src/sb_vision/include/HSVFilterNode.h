@@ -116,6 +116,8 @@ class HSVFilterNode {
     bool image_window_moved;
     int calibration_window_x_pos, calibration_window_y_pos;
     bool calibration_window_moved;
+
+    int image_update_delay;
 };
 
 #endif

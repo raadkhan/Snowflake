@@ -52,13 +52,14 @@ CircleDetection::CircleDetection(int argc, char** argv, std::string node_name) {
 
     // Get some params
     SB_getParam(private_nh, "minimum_target_radius", min_target_radius, 50);
-    SB_getParam(private_nh, "show_image_window", show_window, true);
+    SB_getParam(private_nh, "show_image_window", show_window, false);
+    SB_getParam(private_nh, "image_update_delay", image_update_delay, 100);
 }
 
 void CircleDetection::filteredImageCallBack(
 const sensor_msgs::Image::ConstPtr& image) {
     // If something is seen tell the robot to move
-    int num_circles = countCircles(rosToMat(image));
+    int num_circles = countCircles(rosToMat(image), show_window);
     std_msgs::Bool circle_detected;
     circle_detected.data = num_circles > 0;
     activity_publisher.publish(circle_detected);
@@ -129,7 +130,7 @@ void CircleDetection::showFilteredObjectsWindow(const Mat& filtered_image,
 
     namedWindow("Filtered Objects", WINDOW_AUTOSIZE);
     imshow("Filtered Objects", color_image);
-    waitKey(0);
+    waitKey(image_update_delay);
 }
 
 void CircleDetection::checkIfImageExists(const cv::Mat& img,

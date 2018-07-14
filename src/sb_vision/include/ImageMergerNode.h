@@ -100,6 +100,8 @@ private:
 
     // Image window variables
     bool show_window;
+
+    int image_update_delay;
 };
 
 #endif

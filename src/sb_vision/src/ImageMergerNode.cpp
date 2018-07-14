@@ -32,6 +32,7 @@ ImageMergerNode::ImageMergerNode(int argc, char** argv, std::string node_name) {
     image_transport::ImageTransport it(nh);
 
     SB_getParam(private_nh, "show_image_window", show_window, true);
+    SB_getParam(private_nh, "image_update_delay", image_update_delay, 100);
 
     // Setup subscribers
     uint32_t queue_size = 1;
@@ -50,7 +51,7 @@ void ImageMergerNode::firstImageCallBack(
     if (!received_first_image) {
         ROS_INFO("First image received! (Merger)");
         received_first_image = true;
-        moveWindow(display_window_name, 0, image->height * 2);
+        moveWindow(display_window_name, 1500, 600);
     }
 
     // Update the first image
@@ -65,7 +66,7 @@ void ImageMergerNode::firstImageCallBack(
 
         if (show_window) {
             imshow(display_window_name, merged_image);
-            waitKey(100);
+            waitKey(image_update_delay);
         }
 
         // Outputs the image

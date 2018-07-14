@@ -13,6 +13,8 @@
 #include <geometry_msgs/Twist.h>
 #include <ros/ros.h>
 #include <sensor_msgs/Image.h>
+#include <std_msgs/Bool.h>
+#include <std_msgs/String.h>
 
 // Image Conversion
 #include <cv_bridge/cv_bridge.h>
@@ -38,6 +40,10 @@ class LaneFollow {
      * @param filtered image
      */
     void laneFollowCallback(const sensor_msgs::Image::ConstPtr &filteredImage);
+
+    void greenLightCallBack(const std_msgs::Bool& green_light_detected);
+    // Subscribes to traffic light detection
+    ros::Subscriber traffic_light_subscriber;
 
     // Initializes the corners of the IPM filter
     void IPMFilter(float ipm_base_width,
@@ -137,6 +143,10 @@ class LaneFollow {
     int x2, y2;
     int x3, y3;
     int x4, y4;
+
+    // Traffic light detection
+    int minimum_green_recognised_count;
+    int green_count_recognised;
 
     // Filters and their variables
     IPM ipm;
