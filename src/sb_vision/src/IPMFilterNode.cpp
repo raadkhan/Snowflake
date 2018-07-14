@@ -68,15 +68,15 @@ const sensor_msgs::ImageConstPtr& msg) {
     // Filter the image
     ipmFilter->filterImage(imageInput, IPMFilteredImage);
 
-    // Show the image
-    std::string displayWindowName  = "Snowbots - IPMFilterNode";
-    namedWindow(displayWindowName, CV_WINDOW_AUTOSIZE);
-    imshow(displayWindowName, IPMFilteredImage);
-    if (!window_moved) {
-        moveWindow(displayWindowName, 50, 50);
-        window_moved = true;
-    }
-    waitKey(100);
+//    // Show the image
+//    std::string displayWindowName  = "Snowbots - IPMFilterNode";
+//    namedWindow(displayWindowName, CV_WINDOW_AUTOSIZE);
+//    imshow(displayWindowName, IPMFilteredImage);
+//    if (!window_moved) {
+//        moveWindow(displayWindowName, 50, 50);
+//        window_moved = true;
+//    }
+//    waitKey(100);
 
     // Outputs the image
     sensor_msgs::ImagePtr output_message =
