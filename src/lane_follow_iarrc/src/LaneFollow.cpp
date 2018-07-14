@@ -79,12 +79,11 @@ void LaneFollow::laneFollowCallback(const sensor_msgs::Image::ConstPtr &filtered
     // in the ROS coordinate frame
     origin_point = filtered_image.cols / 2;
 
-    // generate left and right lane points in the filtered image
-    // in the cartesian coordinate frame
     try {
+        // generate left and right lane points in the filtered image
+        // in the cartesian coordinate frame
         std::vector<std::vector<cv::Point2d>> filtered_lane_points =
-
-                ld.getLanePoints(filtered_image, min_left_peak, min_right_peak);
+        ld.getLanePoints(filtered_image, min_left_peak, min_right_peak);
 
         drawWindows(filtered_image,
                     filtered_lane_points,
@@ -101,9 +100,8 @@ void LaneFollow::laneFollowCallback(const sensor_msgs::Image::ConstPtr &filtered
         std::vector<Polynomial> perspective_lane_lines =
                 ld.getLaneLines(perspective_lane_points);
 
-        // get the intersect point of the left and right lane lines in perspective
+        // get the intersect point of the perspective lane lines
         // in the ROS coordinate frame
-
         cv::Point2d lane_intersect_point =
         ld.getLaneIntersectPoint(perspective_lane_lines, ld.degree);
 
@@ -114,7 +112,7 @@ void LaneFollow::laneFollowCallback(const sensor_msgs::Image::ConstPtr &filtered
 
         // figure out how fast we should turn
         stay_in_lane.angular.z =
-                pow(lane_intersect_angle, 2.0) * angular_vel_multiplier;
+        pow(lane_intersect_angle, 2.0) * angular_vel_multiplier;
 
         // limit the angular speed if needed
         if (stay_in_lane.angular.z > angular_vel_cap)
@@ -124,10 +122,11 @@ void LaneFollow::laneFollowCallback(const sensor_msgs::Image::ConstPtr &filtered
         if (stay_in_lane.angular.z == 0)
             stay_in_lane.linear.x = linear_vel_cap;
 
-            // figure out robot velocity if it is turning
-        else
+        // figure out robot velocity if it is turning
+        else {
             stay_in_lane.linear.x =
-                    linear_vel_multiplier / fabs(stay_in_lane.angular.z);
+            linear_vel_multiplier / fabs(stay_in_lane.angular.z);
+        }
 
         // limit the linear speed if needed
         if (stay_in_lane.linear.x > linear_vel_cap)
@@ -157,7 +156,7 @@ void LaneFollow::drawWindows(cv::Mat &filtered_image,
     for (auto &lane_point : lane_points) {
 
         for (auto &j : lane_point) {
-            // make sure all lane points are in first quadrant
+            // make sure all lane points are in 1st quadrant
             // in the cartesian coordinate frame
             assert(j.x >= 0 && j.y >= 0);
 
@@ -172,9 +171,13 @@ void LaneFollow::drawWindows(cv::Mat &filtered_image,
             cv::rectangle(filtered_image,
                           top_left_vertex,
                           bottom_right_vertex,
-                          cv::Scalar(0, 255, 0));
+                          cv::Scalar(255, 255, 255));
         }
     }
+
+    cv::namedWindow("Snowbots - Window Slices", WINDOW_AUTOSIZE);
+    cv::imshow("Snowbots - Window Slices", filtered_image);
+    cv::waitKey(100);
 }
 
 std::vector<std::vector<Point2d>>

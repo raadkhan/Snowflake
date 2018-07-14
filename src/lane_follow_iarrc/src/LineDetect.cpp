@@ -11,7 +11,7 @@
 
 using namespace cv;
 
-LineDetect::LineDetect() : white(255), vertical_slices(10), degree(3) {}
+LineDetect::LineDetect() : white(255), vertical_slices(5), degree(3) {}
 
 cv::Point2d LineDetect::getLaneIntersectPoint(std::vector<Polynomial> lane_lines,
                                               int order) {
@@ -194,13 +194,13 @@ LineDetect::getLanePoints(cv::Mat& filtered_image, int min_left_peak, int min_ri
     std::vector<Window> base_windows =
     this->getBaseWindows(filtered_image, min_left_peak, min_right_peak);
 
+    // the leftmost/rightmost a window's center can be within the image
+    std::pair<int, int>
+    window_bounds(window_width, filtered_image.cols - window_width);
+
     // contains left and right lane points
     std::vector<std::vector<cv::Point2d>> lane_points(
     base_windows.size(), std::vector<cv::Point2d>());
-
-    // the leftmost/rightmost a window's center can be within the image
-    std::pair<int, int> window_bounds(window_width,
-                                      filtered_image.cols - window_width);
 
 
     // iterate through window slices bottom up
@@ -229,7 +229,7 @@ LineDetect::getLanePoints(cv::Mat& filtered_image, int min_left_peak, int min_ri
             BaseWindow.center += WindowPeak.position - window_slice.cols / 2;
 
             // throw an exception if base window's center is shifted
-            // such that the base window goes out of the image's bounds
+            // such that the base window goes out of the image bounds
             if (BaseWindow.center <= window_bounds.first ||
                 BaseWindow.center >= window_bounds.second) {
 
