@@ -83,7 +83,7 @@ void LaneFollow::laneFollowCallback(const sensor_msgs::Image::ConstPtr &filtered
     // in the cartesian coordinate frame
     std::vector<std::vector<cv::Point2d>> filtered_lane_points =
 
-    ld.getLanePoints(filtered_image, 0, 0);
+    ld.getLanePoints(filtered_image, min_left_peak, min_right_peak);
 
     drawWindows(filtered_image,
                 filtered_lane_points,
@@ -144,8 +144,6 @@ void LaneFollow::drawWindows(cv::Mat &filtered_image,
                  std::vector<std::vector<cv::Point2d>> lane_points,
                  int window_width,
                  int vertical_slices) {
-    // make sure we only have two sets of lane points
-    assert(lane_points.size() == 2);
 
     for (auto &lane_point : lane_points) {
         for (auto &j : lane_point) {

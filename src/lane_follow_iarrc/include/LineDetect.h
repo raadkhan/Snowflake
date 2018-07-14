@@ -24,6 +24,12 @@ struct Polynomial {
 // Defines a vector of integer type
 typedef std::vector<int> int_vec;
 
+// Defines a histogram peak
+struct Peak {
+    int position;
+    int value;
+};
+
 // Defines a window slice
 struct Window {
     // window parameters
@@ -79,9 +85,8 @@ class LineDetect {
      *
      * @return left and right lane points
      */
-    std::vector<std::vector<cv::Point2d>> getLanePoints(cv::Mat& filtered_image,
-                                                        int min_left_peak,
-                                                        int min_right_peak);
+    std::vector<std::vector<cv::Point2d>>
+    getLanePoints(cv::Mat& filtered_image, int min_left_peak, int min_right_peak);
 
     /**
      * Creates two base windows to cover left and right lanes
@@ -114,7 +119,11 @@ class LineDetect {
      * @param base histogram
      * @return peak location indices
      */
-    std::pair<int, int> getBaseHistogramPeakPositions(int_vec base_histogram);
+    std::pair<Peak, Peak>
+    getBaseHistogramPeaks(int_vec base_histogram,
+                          int image_width,
+                          int min_left_peak,
+                          int min_right_peak);
 
     /**
      * Creates a window by slicing the left/right base window bottom up
@@ -136,7 +145,7 @@ class LineDetect {
      *
      * @return peak column position
      */
-    int getWindowHistogramPeakPosition(int_vec window_histogram);
+    Peak getWindowHistogramPeaks(int_vec window_histogram);
 
     // Exception class to throw when no intersect roots exist
     class NoLaneIntersectException : public std::exception {
@@ -145,13 +154,21 @@ class LineDetect {
         }
     };
 
-    // Exception class to throw when no lanes lines are seen
-    class NoLaneLinePeaksException : public std::exception {
+    // Exception class to throw when base peaks aren't proper,
+    // implying lane lines can't be seen clearly
+    class NoBasePeaksException : public std::exception {
         virtual const char* what() const throw() {
-            return "cannot see lane line peaks - frame discarded";
+            return "cannot see lane lines - frame discarded";
         }
     };
 
+    // Exception class to throw when base windows go out of bounds,
+    // implying lane lines can't be seen clearly
+    class BaseWindowOutOfBoundsException : public std::exception {
+        virtual const char* what() const throw() {
+            return "cannot see lane lines - frame discarded";
+        }
+    };
     // white color value
     int white;
 
