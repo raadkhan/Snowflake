@@ -53,9 +53,9 @@ DragRaceNode::DragRaceNode(int argc, char** argv, std::string node_name)
     SB_getParam(
     private_nh, "theta_scaling_multiplier", theta_scaling_multiplier, 1.0);
     SB_getParam(
-    private_nh, "angular_speed_multiplier", angular_speed_multiplier, 1.0);
+    private_nh, "angular_vel_multiplier", angular_speed_multiplier, 1.0);
     SB_getParam(
-    private_nh, "linear_speed_multiplier", linear_speed_multiplier, 1.0);
+    private_nh, "linear_vel_multiplier", linear_speed_multiplier, 1.0);
     SB_getParam(private_nh, "line_to_the_right", line_to_the_right, true);
     double max_obstacle_merging_distance, cone_grouping_tolerance,
     min_wall_length;

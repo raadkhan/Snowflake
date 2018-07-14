@@ -147,29 +147,30 @@ class LineDetect {
      */
     Peak getWindowHistogramPeaks(int_vec window_histogram);
 
-    // Exception class to throw when no intersect roots exist
-    class NoLaneIntersectException : public std::exception {
+    // Exception object to throw when no intersect roots exist
+    class NoLaneIntersectRootsException : public std::exception {
         virtual const char* what() const throw() {
-            return "no lane intersects found - frame discarded";
+            return "no lane intersect point found - frame discarded";
         }
-    };
+    } NoLaneIntersectRoots;
 
-    // Exception class to throw when base peaks aren't proper,
+    // Exception object to throw when base windows go out of bounds,
+    // implying lane lines can't be seen clearly
+    class BaseWindowsOutOfBoundsException : public std::exception {
+        virtual const char* what() const throw() {
+            return "cannot see lane lines - frame discarded";
+        }
+    } BaseWindowsOutOfBounds;
+
+    // Exception object to throw when base peaks aren't proper,
     // implying lane lines can't be seen clearly
     class NoBasePeaksException : public std::exception {
         virtual const char* what() const throw() {
             return "cannot see lane lines - frame discarded";
         }
-    };
+    } NoBasePeaks;
 
-    // Exception class to throw when base windows go out of bounds,
-    // implying lane lines can't be seen clearly
-    class BaseWindowOutOfBoundsException : public std::exception {
-        virtual const char* what() const throw() {
-            return "cannot see lane lines - frame discarded";
-        }
-    };
-    // white color value
+    // color value of white
     int white;
 
     // number of window slices

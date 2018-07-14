@@ -67,10 +67,10 @@ void LaneFollow::laneFollowCallback(const sensor_msgs::Image::ConstPtr &filtered
     }
 
     // set don't care components to zero
-    LaneFollow::steering_output.linear.y  = 0;
-    LaneFollow::steering_output.linear.z  = 0;
-    LaneFollow::steering_output.angular.x = 0;
-    LaneFollow::steering_output.angular.y = 0;
+    LaneFollow::stay_in_lane.linear.y  = 0;
+    LaneFollow::stay_in_lane.linear.z  = 0;
+    LaneFollow::stay_in_lane.angular.x = 0;
+    LaneFollow::stay_in_lane.angular.y = 0;
 
     // convert filtered Image to filtered Mat
     filtered_image = this->rosImageToMat(filteredImage);
@@ -81,57 +81,66 @@ void LaneFollow::laneFollowCallback(const sensor_msgs::Image::ConstPtr &filtered
 
     // generate left and right lane points in the filtered image
     // in the cartesian coordinate frame
-    std::vector<std::vector<cv::Point2d>> filtered_lane_points =
+    try {
+        std::vector<std::vector<cv::Point2d>> filtered_lane_points =
 
-    ld.getLanePoints(filtered_image, min_left_peak, min_right_peak);
+                ld.getLanePoints(filtered_image, min_left_peak, min_right_peak);
 
-    drawWindows(filtered_image,
-                filtered_lane_points,
-                ld.window_width,
-                ld.vertical_slices);
+        drawWindows(filtered_image,
+                    filtered_lane_points,
+                    ld.window_width,
+                    ld.vertical_slices);
 
-    // convert the filtered lane points to lane points in perspective
-    // in the cartesian coordinate frame
-    std::vector<std::vector<Point2d>> perspective_lane_points =
-            this->getPerspectiveLanePoints(filtered_lane_points);
+        // convert the filtered lane points to lane points in perspective
+        // in the cartesian coordinate frame
+        std::vector<std::vector<Point2d>> perspective_lane_points =
+                this->getPerspectiveLanePoints(filtered_lane_points);
 
-    // generate the left and right lane line polynomials in perspective
-    // in the cartesian coordinate frame
-    std::vector<Polynomial> perspective_lane_lines =
-    ld.getLaneLines(perspective_lane_points);
+        // generate the left and right lane line polynomials in perspective
+        // in the cartesian coordinate frame
+        std::vector<Polynomial> perspective_lane_lines =
+                ld.getLaneLines(perspective_lane_points);
 
-    // get the intersect point of the left and right lane lines in perspective
-    // in the ROS coordinate frame
-    cv::Point2d lane_intersect_point =
-            ld.getLaneIntersectPoint(perspective_lane_lines, ld.degree);
+        // get the intersect point of the left and right lane lines in perspective
+        // in the ROS coordinate frame
 
-    // get the angle of the lane intersect point from the origin point
-    // in the ROS coordinate frame
-    lane_intersect_angle = this->getAngleFromOriginToIntersectPoint(lane_intersect_point);
+        cv::Point2d lane_intersect_point =
+        ld.getLaneIntersectPoint(perspective_lane_lines, ld.degree);
 
-    // figure out how fast we should turn
-    steering_output.angular.z =
-    pow(lane_intersect_angle, 2.0) * angular_speed_multiplier;
+        // get the angle of the lane intersect point from the origin point
+        // in the ROS coordinate frame
+        lane_intersect_angle =
+                this->getAngleFromOriginToIntersectPoint(lane_intersect_point);
 
-    // limit the angular speed if needed
-    if (steering_output.angular.z > angular_vel_cap)
-        steering_output.angular.z = angular_vel_cap;
+        // figure out how fast we should turn
+        stay_in_lane.angular.z =
+                pow(lane_intersect_angle, 2.0) * angular_vel_multiplier;
 
-    // set robot velocity to max if it is not turning
-    if (steering_output.angular.z == 0)
-        steering_output.linear.x = linear_vel_cap;
+        // limit the angular speed if needed
+        if (stay_in_lane.angular.z > angular_vel_cap)
+            stay_in_lane.angular.z = angular_vel_cap;
 
-    // figure out robot velocity if it is turning
-    else
-        steering_output.linear.x =
-        linear_speed_multiplier / fabs(steering_output.angular.z);
+        // set robot velocity to max if it is not turning
+        if (stay_in_lane.angular.z == 0)
+            stay_in_lane.linear.x = linear_vel_cap;
 
-    // limit the linear speed if needed
-    if (steering_output.linear.x > linear_vel_cap)
-        steering_output.linear.x = linear_vel_cap;
+            // figure out robot velocity if it is turning
+        else
+            stay_in_lane.linear.x =
+                    linear_vel_multiplier / fabs(stay_in_lane.angular.z);
 
-    // publish the recommended steering output to stay in lane
-    stay_in_lane_pub.publish(steering_output);
+        // limit the linear speed if needed
+        if (stay_in_lane.linear.x > linear_vel_cap)
+            stay_in_lane.linear.x = linear_vel_cap;
+
+        // publish the recommended steering output to stay in lane
+        stay_in_lane_pub.publish(stay_in_lane);
+    }
+
+    catch (std::exception &e) {
+        std::cout << e.what() << std::endl;
+        return;
+    }
 }
 
 cv::Mat LaneFollow::rosImageToMat(const sensor_msgs::Image::ConstPtr &image) {
@@ -146,6 +155,7 @@ void LaneFollow::drawWindows(cv::Mat &filtered_image,
                  int vertical_slices) {
 
     for (auto &lane_point : lane_points) {
+
         for (auto &j : lane_point) {
             // make sure all lane points are in first quadrant
             // in the cartesian coordinate frame
@@ -174,7 +184,9 @@ LaneFollow::getPerspectiveLanePoints(std::vector<std::vector<cv::Point2d>> filte
     filtered_lane_points.size(), std::vector<cv::Point2d>());
 
     for (int i = 0; i < filtered_lane_points.size(); i++) {
+
         for (int j = 0; j < filtered_lane_points[i].size(); j++) {
+
             cv::Point2d point = ipm.applyHomographyInv(filtered_lane_points[i][j]);
 
             perspective_lane_points[i].push_back(point);

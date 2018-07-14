@@ -74,7 +74,7 @@ cv::Point2d LineDetect::getLaneIntersectPoint(std::vector<Polynomial> lane_lines
                   << intersect_roots << std::endl
                   << std::endl;
 
-        throw LineDetect::NoLaneIntersectException();
+        throw LineDetect::NoLaneIntersectRoots;
     }
 
     // there exists one unique intersect root
@@ -125,7 +125,7 @@ cv::Point2d LineDetect::getLaneIntersectPoint(std::vector<Polynomial> lane_lines
         std::cout << "intersect_roots = " << std::endl
                   << intersect_roots << std::endl
                   << std::endl;
-        throw LineDetect::NoLaneIntersectException();
+        throw LineDetect::NoLaneIntersectRoots;
     }
 
 create_point:
@@ -181,8 +181,8 @@ Polynomial LineDetect::fitPolyToLine(std::vector<cv::Point2d> points,
     result = A.householderQr().solve(yvMapped);
 
     for (size_t i = 0; i < result.size(); i++) {
-        // and emplace them back to the coefficients array from the lowest
-        // to highest order term
+        // and emplace them back to the coefficients array
+        // from the lowest to highest order term
         PolyLine.coefficients.emplace_back(result[i]);
     }
 
@@ -238,7 +238,7 @@ LineDetect::getLanePoints(cv::Mat& filtered_image, int min_left_peak, int min_ri
                           << "base window center (absolute) = "
                           << BaseWindow.center << std::endl;
 
-                throw LineDetect::BaseWindowOutOfBoundsException();
+                throw LineDetect::BaseWindowsOutOfBounds;
             }
 
             // get y value of the lane point
@@ -331,7 +331,7 @@ LineDetect::getBaseHistogramPeaks(int_vec base_histogram,
                   << "left peak value = "
                   << BasePeaks.first.value << std::endl;
 
-        throw LineDetect::NoBasePeaksException();
+        throw LineDetect::NoBasePeaks;
     }
 
     else {
@@ -362,7 +362,7 @@ LineDetect::getBaseHistogramPeaks(int_vec base_histogram,
                       << "right peak value = "
                       << BasePeaks.second.value << std::endl;
 
-            throw LineDetect::NoBasePeaksException();
+            throw LineDetect::NoBasePeaks;
         }
 
         else { return BasePeaks; }

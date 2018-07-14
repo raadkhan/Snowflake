@@ -39,6 +39,14 @@ class LaneFollow {
      */
     void laneFollowCallback(const sensor_msgs::Image::ConstPtr &filteredImage);
 
+    // Initializes the corners of the IPM filter
+    void IPMFilter(float ipm_base_width,
+                   float ipm_top_width,
+                   float ipm_base_displacement,
+                   float ipm_top_displacement,
+                   float image_height,
+                   float image_width);
+
     /**
      * Converts Image to Mat
      *
@@ -82,28 +90,20 @@ class LaneFollow {
      */
     double getAngleFromOriginToIntersectPoint(cv::Point2d lane_intersect_point);
 
-    // Initializes the corners of the filter
-    void IPMFilter(float ipm_base_width,
-                   float ipm_top_width,
-                   float ipm_base_displacement,
-                   float ipm_top_displacement,
-                   float image_height,
-                   float image_width);
-
     // Instantiate LineDetect to generate the lane lines
     LineDetect ld;
 
     // Filtered image subscriber node
     image_transport::Subscriber filtered_image_sub;
 
-    // Steering driver publisher node
-    ros::Publisher stay_in_lane_pub;
-
     // Image processing pipeline Mat
     cv::Mat filtered_image;
 
+    // Steering driver publisher node
+    ros::Publisher stay_in_lane_pub;
+
     // Recommended steer to follow lane
-    geometry_msgs::Twist steering_output;
+    geometry_msgs::Twist stay_in_lane;
 
     // Whether or not we received the first image
     bool receivedFirstImage;
@@ -112,19 +112,19 @@ class LaneFollow {
     int min_left_peak;
     int min_right_peak;
 
-    // Angle of destination point to robot
-    double lane_intersect_angle;
-
     // Origin of the robot
     int origin_point;
+
+    // Angle of destination point to robot
+    double lane_intersect_angle;
 
     // Velocity limits
     double angular_vel_cap;
     double linear_vel_cap;
 
     // Speed scalars
-    double angular_speed_multiplier;
-    double linear_speed_multiplier;
+    double angular_vel_multiplier;
+    double linear_vel_multiplier;
 
     // IPM filter variables
     float ipm_base_width,
