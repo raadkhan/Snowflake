@@ -41,9 +41,12 @@ class LaneFollow {
      */
     void laneFollowCallback(const sensor_msgs::Image::ConstPtr &filteredImage);
 
+    /**
+     * Callback for the green light detection
+     *
+     * @param filtered image
+     */
     void greenLightCallBack(const std_msgs::Bool& green_light_detected);
-    // Subscribes to traffic light detection
-    ros::Subscriber traffic_light_subscriber;
 
     // Initializes the corners of the IPM filter
     void IPMFilter(float ipm_base_width,
@@ -99,16 +102,19 @@ class LaneFollow {
     // Instantiate LineDetect to generate the lane lines
     LineDetect ld;
 
-    // Filtered image subscriber node
+    // Traffic light detection subscriber
+    ros::Subscriber traffic_light_sub;
+
+    // Filtered image subscriber
     image_transport::Subscriber filtered_image_sub;
 
     // Image processing pipeline Mat
     cv::Mat filtered_image;
 
-    // Steering driver publisher node
+    // Steering driver publisher
     ros::Publisher stay_in_lane_pub;
 
-    // Recommended steer to follow lane
+    // Recommended steer to stay in lane
     geometry_msgs::Twist stay_in_lane;
 
     // Whether or not we received the first image
@@ -144,14 +150,14 @@ class LaneFollow {
     int x3, y3;
     int x4, y4;
 
-    // Traffic light detection
-    int minimum_green_recognised_count;
-    int green_count_recognised;
-
     // Filters and their variables
     IPM ipm;
     std::vector<cv::Point2f> orig_points;
     std::vector<cv::Point2f> dst_points;
+
+    // Traffic light detection
+    int minimum_green_recognised_count;
+    int green_count_recognised;
 };
 
 #endif

@@ -23,9 +23,9 @@ LaneFollow::LaneFollow(int argc, char** argv, std::string node_name) {
     image_transport::ImageTransport it(nh);
 
     // setup topics
+    std::string traffic_light_topic = "/robot/vision/activity_detected";
     std::string input_topic  = "vision/complete_filtered_image";
     std::string output_topic = "/cmd_vel";
-    std::string traffic_light_topic = "/robot/vision/activity_detected";
 
     uint32_t queue_size = 1;
 
@@ -38,11 +38,12 @@ LaneFollow::LaneFollow(int argc, char** argv, std::string node_name) {
                 minimum_green_recognised_count,
                 -1);
 
-    // set up subscriber
+    // set up subscribers
     filtered_image_sub = it.subscribe(
     input_topic, queue_size, &LaneFollow::laneFollowCallback, this);
-    traffic_light_subscriber = nh.subscribe(
-            traffic_light_topic, queue_size, &LaneFollow::greenLightCallBack, this);
+
+    traffic_light_sub = nh.subscribe(
+    traffic_light_topic, queue_size, &LaneFollow::greenLightCallBack, this);
 
     // set up publisher
     stay_in_lane_pub =
@@ -50,7 +51,7 @@ LaneFollow::LaneFollow(int argc, char** argv, std::string node_name) {
 }
 
 void LaneFollow::greenLightCallBack(
-        const std_msgs::Bool& green_light_detected) {
+const std_msgs::Bool& green_light_detected) {
     if (green_light_detected.data) { green_count_recognised++; }
 }
 
@@ -59,7 +60,7 @@ void LaneFollow::laneFollowCallback(const sensor_msgs::Image::ConstPtr &filtered
         ros::NodeHandle private_nh("~");
 
         receivedFirstImage = true;
-        ROS_INFO("First image received (LaneFollow)");
+        ROS_INFO("First image received! (LaneFollow)");
 
         SB_getParam(private_nh,
                     "min_left_peak",
@@ -105,12 +106,12 @@ void LaneFollow::laneFollowCallback(const sensor_msgs::Image::ConstPtr &filtered
         // convert the filtered lane points to lane points in perspective
         // in the cartesian coordinate frame
         std::vector<std::vector<Point2d>> perspective_lane_points =
-                this->getPerspectiveLanePoints(filtered_lane_points);
+        this->getPerspectiveLanePoints(filtered_lane_points);
 
         // generate the left and right lane line polynomials in perspective
         // in the cartesian coordinate frame
         std::vector<Polynomial> perspective_lane_lines =
-                ld.getLaneLines(perspective_lane_points);
+        ld.getLaneLines(perspective_lane_points);
 
         // get the intersect point of the perspective lane lines
         // in the ROS coordinate frame
@@ -120,7 +121,7 @@ void LaneFollow::laneFollowCallback(const sensor_msgs::Image::ConstPtr &filtered
         // get the angle of the lane intersect point from the origin point
         // in the ROS coordinate frame
         lane_intersect_angle =
-                this->getAngleFromOriginToIntersectPoint(lane_intersect_point);
+        this->getAngleFromOriginToIntersectPoint(lane_intersect_point);
 
         // figure out how fast we should turn
         stay_in_lane.angular.z =
@@ -149,8 +150,10 @@ void LaneFollow::laneFollowCallback(const sensor_msgs::Image::ConstPtr &filtered
             stay_in_lane.angular.z = 0;
             stay_in_lane.linear.x  = 0;
         }
-std::cout << "PUBLISHING A MSG" << std::endl;
-        // publish the recommended steering output to stay in lane
+
+        std::cout << "PUBLISHING A TWIST" << std::endl;
+
+        // publish the recommended steer to stay in lane
         stay_in_lane_pub.publish(stay_in_lane);
     }
 

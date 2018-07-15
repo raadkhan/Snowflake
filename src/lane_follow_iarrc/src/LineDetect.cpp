@@ -195,8 +195,8 @@ LineDetect::getLanePoints(cv::Mat& filtered_image, int min_left_peak, int min_ri
     this->getBaseWindows(filtered_image, min_left_peak, min_right_peak);
 
     // the leftmost/rightmost a window's center can be within the image
-    std::pair<int, int>
-    window_bounds(window_width, filtered_image.cols - window_width);
+    std::pair<int, int> window_bounds(window_width,
+                                      filtered_image.cols - window_width);
 
     // contains left and right lane points
     std::vector<std::vector<cv::Point2d>> lane_points(
