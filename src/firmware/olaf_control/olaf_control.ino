@@ -5,15 +5,17 @@
  * Modified: Jinhao Lu
  * Modified: Gareth Ellis
  * Modified: Valerian Ratu
- * Date Last Modified: October 22, 2017
+ * Modified: Marinah Zhao
+ * Modified: Raad Khan
+ * Date Last Modified: July 12, 2018
  */
 
 /*
- * UBC Snowbots - IARRC 2017
- * Firmware for Control of an RC car
+ * UBC Snowbots - IARRC 2018
+ * Firmware for Control of Olaf 3.0 (RC car)
  * 
  * This firmware will take in a message of the form:
- * `B<linear x><linear y><linear z><angular x><angular y><angular z>`
+ * `B<linear x> <linear y> <linear z> <angular x> <angular y> <angular z>`
  * where each `<>` is a single byte. The degree to rotate the servo controlling
  * the front wheels is determined from `angular z`, and the speed of the car by `linear x`
  * (the rest of the values are discarded)
@@ -22,6 +24,8 @@
 #include <SoftwareSerial.h>
 #include <stdlib.h>
 #include <Servo.h>
+#include <PID_v1.h>
+#include <Encoder.h>
 
 // !!!!WARNING!!!! 
 // DEBUGGING might affect performance and alter normal behaviour
@@ -48,6 +52,9 @@
 // SAFETY_TIMEOUT is in ms
 #define SAFETY_TIMEOUT 500
 
+#define encoderChannelA 2
+#define encoderChannelB 3
+
 void serial_read();
 void convert();
 void drive(int, int);
@@ -61,8 +68,8 @@ int angular_y = MAPPED_STRAIGHT_ANGLE;
 int angular_z = MAPPED_STRAIGHT_ANGLE;
 
 // motor pins
-const int MOTOR_PIN = A0;
-const int DIRECTION_PIN = A2;
+const int DRIVING_MOTOR_PIN = A0;
+const int STEERING_MOTOR_PIN = A2;
 
 // defines start of buffer
 const char BUFFER_HEAD = 'B';
@@ -88,18 +95,61 @@ const int MAX_PWM = 2000;
 const int MIN_MOTOR_PWM_CUTOFF = 1300;
 const int MAX_MOTOR_PWM_CUTOFF = 1700;
 
+// The conversions for counts to radians and rad/s to m/s
+const int CPR = 360; // Cycles Per Revolution
+const int DPR = 360; // Degrees Per Revolution
+const double COUNT_TO_RAD = DEG_TO_RAD * (DPR / (CPR * 4)); // CPR * 4 = Counts Per Revolution
+const double ANG_TO_LIN_VEL = 0.05; // 0.05 = wheel radius (m)
+
+// The encoder count, calculated angle, and calculated velocity values
+volatile int encoder_count = 0;
+volatile float angle_previous = 0,angle_next = 0;
+double measured_velocity = 0, desired_velocity = 10, output_velocity;
+
+// Counters for Timer2 to calculate the velocity and angle
+volatile int tcnt2 = 131;
+volatile int t = 0;
+
+// PID values- adjust these as you see fit during testing
+double Kp = 1, Ki = 1, Kd = 1;
+
 unsigned long previousMillis = 0;
 unsigned long currentMillis = 0;
 
-Servo motor;
-Servo direction_motor;
+Servo driving_motor;
+Servo steering_motor;
+
+Encoder encoder(encoderChannelA, encoderChannelB);
+
+PID velocityPID(&measured_velocity, &output_velocity, &desired_velocity, Kp, Ki, Kd, DIRECT);
 
 void setup() {
     Serial.begin(BAUD_RATE);
 
-    // Initialiase the Servo and Motor connections
-    motor.attach(MOTOR_PIN, MIN_PWM, MAX_PWM);
-    direction_motor.attach(DIRECTION_PIN, MIN_PWM, MAX_PWM);
+    // Initialise the Servo and Motor connections
+    driving_motor.attach(DRIVING_MOTOR_PIN, MIN_PWM, MAX_PWM);
+    steering_motor.attach(STEERING_MOTOR_PIN, MIN_PWM, MAX_PWM);
+
+    // Initialise the Encoder connections
+    pinMode(encoderChannelA, INPUT);
+    pinMode(encoderChannelB, INPUT);
+
+    // Configure the PID veloctity controller
+    velocityPID.SetMode(AUTOMATIC);
+    velocityPID.SetTunings(Kp, Ki, Kd);
+    
+    // Set up Timer2: interrupts every 1 ms to measure and calculate velocity/angle
+    noInterrupts();
+    TIMSK2 &= ~(1<<TOIE2);
+    TCCR2A &= ~((1<<WGM21) | (1<<WGM20));
+    TCCR2B &= ~(1<<WGM22);
+    ASSR &= ~(1<<AS2);
+    TIMSK2 &= ~(1<<OCIE2A);
+    TCCR2B |= (1<<CS22)  | (1<<CS20);
+    TCCR2B &= ~(1<<CS21);
+    TCNT2 = tcnt2;
+    TIMSK2 |= (1<<TOIE2);
+    interrupts();
 }
 
 void loop() {
@@ -127,6 +177,20 @@ void serial_read(){
         Serial.print("Angular X:"); Serial.println(angular_x);
         Serial.print("Angular Y:"); Serial.println(angular_y);
         Serial.print("Angular Z:"); Serial.println(angular_z);
+
+        Serial.print("Encoder Count: ");
+        Serial.print(encoder_count, DEC); 
+        Serial.print("; ");
+        Serial.print("Measured Velocity: ");
+        Serial.print(measured_velocity, 4); 
+        Serial.print("; ");
+        Serial.print("Output Velocity: ");
+        Serial.print(output_velocity, 4);
+        Serial.print("; "); 
+        Serial.print("Driving Motor Pin Signal: ");
+        Serial.print(DRIVING_MOTOR_PIN, 4);
+        Serial.print("; ");
+        Serial.print("\n");
 #endif
     } else {
         currentMillis = millis();
@@ -164,8 +228,8 @@ void drive(int linear_speed, int angular_speed){
         velocity = MIN_MOTOR_PWM_CUTOFF;
 
     // Write the commands to the motor and the servo
-    motor.writeMicroseconds(velocity);
-    direction_motor.writeMicroseconds(angle);
+    driving_motor.writeMicroseconds(velocity);
+    steering_motor.writeMicroseconds(angle);
 
 #ifdef DEBUG_PWM
     Serial.print(velocity);Serial.print(" / ");
@@ -174,5 +238,23 @@ void drive(int linear_speed, int angular_speed){
     Serial.print(angular_speed);Serial.print(" / ");
     Serial.println();
 #endif
+}
+
+ISR(TIMER2_OVF_vect) {  
+  TCNT2 = tcnt2;  // reload the timer
+  t++;
+  if (t == 1) {
+    encoder_count = encoder.read();
+    angle_previous = encoder_count * COUNT_TO_RAD;
+  }
+  else if (t == 20) {
+    encoder_count = encoder.read();
+    angle_next = encoder_count * COUNT_TO_RAD;
+  }
+  else if (t == 21) {
+    // * 50 = 1000 ms/s / 20 ms
+    measured_velocity = ANG_TO_LIN_VEL * (angle_next - angle_previous) * 50; 
+    t = 0;
+  }
 }
 
