@@ -23,6 +23,7 @@ UBC Snowbots Repository for competitions.
   - [Rostest](#rostest)
 - [Simulating with Gazebo](#simulating-with-gazebo)
 - [Arduino Development](#arduino-development)
+- [Intel Realsense](#intel-realsense)
 - [Debugging Tips](#debugging-tips)
 
 ## Installation and Setup
@@ -31,9 +32,8 @@ You will be downloading an Ubuntu ISO and multiple ROS packages with their respe
 It is highly recommended that you have access to high speed internet while doing this entire setup; 
 if you're on campus use the `ubcsecure` or `resnet` networks for best results.
 
-1. Install Ubuntu 16.04 (**Backup your important data first**) (We recommend you use a minimum of 30GB of space) 
-    - For dual-booting: [Windows Instructions](http://www.tecmint.com/install-ubuntu-16-04-alongside-with-windows-10-or-8-in-dual-boot/), [Mac Instructions](http://www.howtogeek.com/187410/how-to-install-and-dual-boot-linux-on-a-mac/)
-    - _Note_: You should always choose the "install alongside Windows/OSX" during your installation (step 7 in the windows tutorial)
+1. Install Ubuntu 18.04 (**Note**: Download 18.04, **not** another version, as other Ubuntu versions will make setting up this repo much more painful) (**Backup your important data first**) (We recommend you use a minimum of 30GB of space) 
+    - For dual-booting: [Windows Instructions](https://askubuntu.com/questions/1031993/how-to-install-ubuntu-18-04-alongside-windows-10), [Mac Instructions](https://www.maketecheasier.com/install-dual-boot-ubuntu-mac)
 2. If you haven't done so already, setup your UBC alumni email account [here](https://id.ubc.ca/) 
 3. Using your UBC email account, get a JetBrains education account [here](https://www.jetbrains.com/shop/eform/students)
     - _JetBrains will send an initial email to confirm the UBC email you inputted, 
@@ -219,6 +219,16 @@ some_ros_package
 ## Arduino Development
 - When developing the firmware/Arduino parts of the software, we've made a complete arduino workspace in `src/firmware`. This way you don't need to worry about downloading the libraries yourself!
 - In order to use this, go to your Arduino IDE's Preferences dialog box and use `/your/path/to/Snowflake/src/firmware` as your sketchbook directory. Open arduino sketches in the workspace and they will work!
+
+## Intel Realsense
+Intel Realsense is a sensor that captures a 3D depth map of the environment in front of the sensor. This 3D depth map is called a **point cloud**, which is essentially just a list (vector in c++) that contains a bunch of points, where each point contains the x, y, and z coordinates, as well as a color value associated to it. 
+- **Visualizing the input from the realsense**: Run `roslaunch realsense2_camera rs_rgbd.launch` to launch realsense. You should be able to see the point cloud at the topic named `/camera/depth_registered/points` in `rviz`.
+- **Recording a rosbag from the Realsense**: Recording a rosbag  from the Realsense is useful, because you can record the input from the sensor and play it as many time as you want after recording it. That way, you don't need the physical sensor and you don't to "capture" the same thing every time you run it.
+    1. Launch realsense using `roslaunch realsense2_camera rs_rgbd.launch`.
+    2. Record a rosbag by running `rosbag record /camera/depth_registered/points <options>`. See `rosbag record -h` for the list of options. To stop the recording, just press ctrl+c. E.g. `rosbag record /camera/depth_registered/points --split --duration 1m --max-splits 3 -o ../rosbags/tennis_ball/` - split files every 1 minute, split for maximum of 3 times, and store the rosbag in ` ../rosbags/tennis_ball/` folder.
+    3. Stop the realsense node (ctrl+c the process launched in step 1)
+    4. Run `rosbag play path/to/rosbag/file -l`. `path/to/rosbag/file` is the path to the rosbag generated in step 2. Note that the `-l` flag loops the recording so it will play forever until you terminate it manually (using ctrl+c).
+    5. Open `rviz`. You should be able to see the recording of the point cloud at `/camera/depth_registered/points`.
 
 ## Debugging Tips
 - If something is happening that does not seem to correspond to your code, (ex. if your node is subscribing to the totally wrong topic) try deleting the `build` and `devel` folders (if present) to remove any "cached" information

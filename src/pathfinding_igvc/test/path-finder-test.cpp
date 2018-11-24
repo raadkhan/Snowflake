@@ -11,6 +11,7 @@
 signed char _ = AStar::GRID_FREE;
 signed char X = AStar::GRID_OCCUPIED;
 
+// TODO: Uncomment and fix, see issue #339
 TEST(PathFinder, TestPathWithNoObstacle) {
     /* origin of OccupancyGrid */
     // initialize origin of occupancy grid
@@ -52,6 +53,7 @@ TEST(PathFinder, TestPathWithNoObstacle) {
     EXPECT_FLOAT_EQ(path.poses[1].pose.position.y, 5.0);
 }
 
+// TODO: Uncomment and fix, see issue #339
 TEST(PathFinder, TestFullPath) {
     /* origin of OccupancyGrid */
     // initialize origin of occupancy grid
@@ -101,6 +103,7 @@ TEST(PathFinder, TestFullPath) {
     }
 }
 
+// TODO: Uncomment and fix, see issue #339
 TEST(PathFinder, PathFindingWhenGoalNotInGrid) {
     /* origin of OccupancyGrid */
     // initialize origin of occupancy grid
