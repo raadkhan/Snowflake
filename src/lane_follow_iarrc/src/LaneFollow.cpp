@@ -23,7 +23,7 @@ LaneFollow::LaneFollow(int argc, char** argv, std::string node_name) {
     image_transport::ImageTransport it(nh);
 
     // setup topics
-    std::string traffic_light_topic = "/robot/vision/activity_detected";
+    std::string traffic_light_topic = "vision/activity_detected";
     std::string input_topic  = "vision/complete_filtered_image";
     std::string output_topic = "/cmd_vel";
 
@@ -48,6 +48,12 @@ LaneFollow::LaneFollow(int argc, char** argv, std::string node_name) {
     // set up publisher
     stay_in_lane_pub =
     nh.advertise<geometry_msgs::Twist>(output_topic, queue_size);
+
+    angular_vel_cap = 10;
+    linear_vel_cap = 10;
+
+    angular_vel_multiplier = 1;
+    linear_vel_multiplier = 1;
 }
 
 void LaneFollow::greenLightCallBack(
@@ -77,6 +83,10 @@ void LaneFollow::laneFollowCallback(const sensor_msgs::Image::ConstPtr &filtered
                   ipm_top_displacement,
                   filteredImage->height,
                   filteredImage->width);
+
+        // point of origin
+        // in the ROS coordinate frame
+        origin_point = filtered_image.cols / 2;
     }
 
     // set don't care components to zero
@@ -87,10 +97,6 @@ void LaneFollow::laneFollowCallback(const sensor_msgs::Image::ConstPtr &filtered
 
     // convert filtered Image to filtered Mat
     filtered_image = this->rosImageToMat(filteredImage);
-
-    // point of origin
-    // in the ROS coordinate frame
-    origin_point = filtered_image.cols / 2;
 
     try {
         // generate left and right lane points in the filtered image
@@ -151,7 +157,7 @@ void LaneFollow::laneFollowCallback(const sensor_msgs::Image::ConstPtr &filtered
             stay_in_lane.linear.x  = 0;
         }
 
-        std::cout << "PUBLISHING A TWIST" << std::endl;
+        std::cout << "Publishing a Twist" << std::endl;
 
         // publish the recommended steer to stay in lane
         stay_in_lane_pub.publish(stay_in_lane);

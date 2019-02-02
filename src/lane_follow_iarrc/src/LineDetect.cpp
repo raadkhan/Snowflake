@@ -260,7 +260,7 @@ LineDetect::getLanePoints(cv::Mat& filtered_image, int min_left_peak, int min_ri
 std::vector<Window> LineDetect::getBaseWindows(cv::Mat& filtered_image,
                                                int min_left_peak,
                                                int min_right_peak) {
-    window_width = filtered_image.cols / 6;
+    window_width = filtered_image.cols / 8;
 
     int_vec base_histogram = this->getHistogram(filtered_image);
 
@@ -326,9 +326,9 @@ LineDetect::getBaseHistogramPeaks(int_vec base_histogram,
     if ( BasePeaks.first.position <= window_width ||
          BasePeaks.first.value < min_left_peak) {
 
-        std::cout << "left peak position = "
+        std::cout << "left base peak position = "
                   << BasePeaks.first.position << std::endl
-                  << "left peak value = "
+                  << "left base peak value = "
                   << BasePeaks.first.value << std::endl;
 
         throw LineDetect::NoBasePeaks;
@@ -357,9 +357,9 @@ LineDetect::getBaseHistogramPeaks(int_vec base_histogram,
         if (BasePeaks.second.position >= (image_width - window_width) ||
             BasePeaks.second.value < min_right_peak) {
 
-            std::cout << "right peak position = "
+            std::cout << "right base peak position = "
                       << BasePeaks.second.position << std::endl
-                      << "right peak value = "
+                      << "right base peak value = "
                       << BasePeaks.second.value << std::endl;
 
             throw LineDetect::NoBasePeaks;

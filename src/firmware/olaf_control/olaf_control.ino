@@ -1,4 +1,4 @@
-/* Firmware for IARRC 2017
+/* Firmware for IARRC 2018
  * Author: Vincent Yuan, 
  * Modified: Nick Wu
  * Modified: James Asefa
