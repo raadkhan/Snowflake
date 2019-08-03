@@ -218,14 +218,12 @@ TEST(LineDetect, getLaneIntersectPointCenterTest) {
     LineDetect TestLineDetect;
 
     cv::Point2d test_intersect_point =
-            TestLineDetect.getLaneIntersectPoint(test_lane_lines, test_order);
+    TestLineDetect.getLaneIntersectPoint(test_lane_lines, test_order);
 
     cv::Point2d expected_intersect_point = {8.83210, -4.39143};
 
-    EXPECT_NEAR(
-    expected_intersect_point.x, test_intersect_point.x, 0.00001);
-    EXPECT_NEAR(
-    expected_intersect_point.y, test_intersect_point.y, 0.00001);
+    EXPECT_NEAR(expected_intersect_point.x, test_intersect_point.x, 0.00001);
+    EXPECT_NEAR(expected_intersect_point.y, test_intersect_point.y, 0.00001);
 }
 
 // lane curving right
@@ -326,14 +324,12 @@ TEST(LineDetect, getLaneIntersectPointRightTest) {
     LineDetect TestLineDetect;
 
     cv::Point2d test_intersect_point =
-            TestLineDetect.getLaneIntersectPoint(test_lane_lines, test_order);
+    TestLineDetect.getLaneIntersectPoint(test_lane_lines, test_order);
 
     cv::Point2d expected_intersect_point = {7.89850, -12.55519};
 
-    EXPECT_NEAR(
-    expected_intersect_point.x, test_intersect_point.x, 0.00001);
-    EXPECT_NEAR(
-    expected_intersect_point.y, test_intersect_point.y, 0.00001);
+    EXPECT_NEAR(expected_intersect_point.x, test_intersect_point.x, 0.00001);
+    EXPECT_NEAR(expected_intersect_point.y, test_intersect_point.y, 0.00001);
 }
 
 // lane curving left in normal perspective view
@@ -446,14 +442,12 @@ TEST(LineDetect, getLaneIntersectPointLeftTest) {
     LineDetect TestLineDetect;
 
     cv::Point2d test_intersect_point =
-            TestLineDetect.getLaneIntersectPoint(test_lane_lines, test_order);
+    TestLineDetect.getLaneIntersectPoint(test_lane_lines, test_order);
 
     cv::Point2d expected_intersect_point = {15.58456, -23.22649};
 
-    EXPECT_NEAR(
-    expected_intersect_point.x, test_intersect_point.x, 0.00001);
-    EXPECT_NEAR(
-    expected_intersect_point.y, test_intersect_point.y, 0.00001);
+    EXPECT_NEAR(expected_intersect_point.x, test_intersect_point.x, 0.00001);
+    EXPECT_NEAR(expected_intersect_point.y, test_intersect_point.y, 0.00001);
 }
 
 TEST(LineDetect, getLaneIntersectPointNoneTest) {
@@ -473,7 +467,7 @@ TEST(LineDetect, getLaneIntersectPointNoneTest) {
 
     try {
         cv::Point2d test_intersect_point =
-                TestLineDetect.getLaneIntersectPoint(test_lane_lines, test_order);
+        TestLineDetect.getLaneIntersectPoint(test_lane_lines, test_order);
     } catch (std::exception& error) {
         EXPECT_EQ(error.what(),
                   std::string("no lane intersects found - frame discarded"));

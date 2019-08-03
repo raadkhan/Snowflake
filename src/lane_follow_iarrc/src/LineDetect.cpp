@@ -13,15 +13,15 @@ using namespace cv;
 
 LineDetect::LineDetect() : white(255), vertical_slices(5), degree(3) {}
 
-cv::Point2d LineDetect::getLaneIntersectPoint(std::vector<Polynomial> lane_lines,
-                                              int order) {
+cv::Point2d
+LineDetect::getLaneIntersectPoint(std::vector<Polynomial> lane_lines,
+                                  int order) {
     Polynomial LeftLanePolynomial  = lane_lines[0];
     Polynomial RightLanePolynomial = lane_lines[1];
     Polynomial IntersectPolynomial = Polynomial();
 
     // create the intersect polynomial
     for (int i = 0; i <= order; i++) {
-
         IntersectPolynomial.coefficients.emplace_back(
         RightLanePolynomial.coefficients[i] -
         LeftLanePolynomial.coefficients[i]);
@@ -53,11 +53,9 @@ cv::Point2d LineDetect::getLaneIntersectPoint(std::vector<Polynomial> lane_lines
     std::vector<double> possible_x_intersects;
 
     for (int i = 0; i <= max_row; i++) {
-
         // find the real roots knowing its y components are very close to 0
         if ((intersect_roots.at<cv::Vec2d>(i, max_col)[1] >= -1e-10) &&
             (intersect_roots.at<cv::Vec2d>(i, max_col)[1] <= +1e-10)) {
-
             // store x components of the possible intersect roots
             possible_x_intersects.emplace_back(
             intersect_roots.at<double>(i, max_col));
@@ -69,7 +67,6 @@ cv::Point2d LineDetect::getLaneIntersectPoint(std::vector<Polynomial> lane_lines
 
     // throw an exception if no intersect roots exist
     if (possible_x_intersects.size() == 1 && possible_x_intersects[0] == 0) {
-
         std::cout << "intersect_roots = " << std::endl
                   << intersect_roots << std::endl
                   << std::endl;
@@ -79,7 +76,6 @@ cv::Point2d LineDetect::getLaneIntersectPoint(std::vector<Polynomial> lane_lines
 
     // there exists one unique intersect root
     else if (possible_x_intersects.size() == 1) {
-
         // set x component of the intersect root
         x_intersect = possible_x_intersects[0];
 
@@ -88,7 +84,6 @@ cv::Point2d LineDetect::getLaneIntersectPoint(std::vector<Polynomial> lane_lines
         // solve the right/left lane polynomial given the x intersect and
         // sum up powered terms
         for (int i = order; i > 0; i--) {
-
             y_intersect +=
             (RightLanePolynomial.coefficients[i] * pow(x_intersect, i));
         }
@@ -102,14 +97,12 @@ cv::Point2d LineDetect::getLaneIntersectPoint(std::vector<Polynomial> lane_lines
     else {
         // attempt to find the correct intersect root
         for (double possible_x_intersect : possible_x_intersects) {
-
             x_intersect = possible_x_intersect;
             y_intersect = 0;
 
             // set x value of the right/left lane polynomial to the x intersect
             // and sum up powered terms
             for (int j = order; j > 0; j--) {
-
                 y_intersect +=
                 (RightLanePolynomial.coefficients[j] * pow(x_intersect, j));
             }
@@ -142,8 +135,7 @@ LineDetect::getLaneLines(std::vector<std::vector<cv::Point2d>> lane_points) {
     // contains left and right lane polynomials
     std::vector<Polynomial> lane_lines;
 
-    for (std::vector<cv::Point2d> const &points : lane_points) {
-
+    for (std::vector<cv::Point2d> const& points : lane_points) {
         poly_line = this->fitPolyToLine(points, degree);
         lane_lines.emplace_back(poly_line);
     }
@@ -161,7 +153,6 @@ Polynomial LineDetect::fitPolyToLine(std::vector<cv::Point2d> points,
     std::vector<double> yv(points.size(), 0);
 
     for (size_t i = 0; i < points.size(); i++) {
-
         xv[i] = points[i].x;
         yv[i] = points[i].y;
     }
@@ -173,9 +164,7 @@ Polynomial LineDetect::fitPolyToLine(std::vector<cv::Point2d> points,
     // create matrix
     for (size_t i = 0; i < points.size(); i++)
 
-        for (size_t j = 0; j <= order; j++)
-
-            A(i, j) = pow((xv.at(i)), j);
+        for (size_t j = 0; j <= order; j++) A(i, j) = pow((xv.at(i)), j);
 
     // solve for linear least squares fit to get the coefficients
     result = A.householderQr().solve(yvMapped);
@@ -189,8 +178,8 @@ Polynomial LineDetect::fitPolyToLine(std::vector<cv::Point2d> points,
     return PolyLine;
 }
 
-std::vector<std::vector<cv::Point2d>>
-LineDetect::getLanePoints(cv::Mat& filtered_image, int min_left_peak, int min_right_peak) {
+std::vector<std::vector<cv::Point2d>> LineDetect::getLanePoints(
+cv::Mat& filtered_image, int min_left_peak, int min_right_peak) {
     std::vector<Window> base_windows =
     this->getBaseWindows(filtered_image, min_left_peak, min_right_peak);
 
@@ -202,22 +191,18 @@ LineDetect::getLanePoints(cv::Mat& filtered_image, int min_left_peak, int min_ri
     std::vector<std::vector<cv::Point2d>> lane_points(
     base_windows.size(), std::vector<cv::Point2d>());
 
-
     // iterate through window slices bottom up
     for (int window_slice_index = 0; window_slice_index < vertical_slices;
          window_slice_index++) {
-
         // iterate through base windows left to right
         for (int lor_window_index = 0; lor_window_index < base_windows.size();
              lor_window_index++) {
-
             // obtain the left or right base window
             Window BaseWindow = base_windows[lor_window_index];
 
             // obtain the window slice
-            cv::Mat window_slice = this->getWindowSlice(filtered_image,
-                                                        BaseWindow,
-                                                        window_slice_index);
+            cv::Mat window_slice = this->getWindowSlice(
+            filtered_image, BaseWindow, window_slice_index);
 
             // obtain the window histogram
             int_vec window_histogram = this->getHistogram(window_slice);
@@ -232,7 +217,6 @@ LineDetect::getLanePoints(cv::Mat& filtered_image, int min_left_peak, int min_ri
             // such that the base window goes out of the image bounds
             if (BaseWindow.center <= window_bounds.first ||
                 BaseWindow.center >= window_bounds.second) {
-
                 std::cout << "window peak position (relative) = "
                           << WindowPeak.position << std::endl
                           << "base window center (absolute) = "
@@ -264,11 +248,8 @@ std::vector<Window> LineDetect::getBaseWindows(cv::Mat& filtered_image,
 
     int_vec base_histogram = this->getHistogram(filtered_image);
 
-    std::pair<Peak, Peak> BasePeaks =
-            this->getBaseHistogramPeaks(base_histogram,
-                                        filtered_image.cols,
-                                        min_left_peak,
-                                        min_right_peak);
+    std::pair<Peak, Peak> BasePeaks = this->getBaseHistogramPeaks(
+    base_histogram, filtered_image.cols, min_left_peak, min_right_peak);
 
     // contains left and right base windows
     std::vector<Window> base_windows;
@@ -282,14 +263,12 @@ std::vector<Window> LineDetect::getBaseWindows(cv::Mat& filtered_image,
     return base_windows;
 }
 
-int_vec LineDetect::getHistogram(cv::Mat &ROI) {
+int_vec LineDetect::getHistogram(cv::Mat& ROI) {
     int_vec histogram(ROI.cols, 0);
 
     // counts number of white pixels in each column
     for (int i = 0; i < ROI.rows; i++) {
-
         for (int j = 0; j < ROI.cols; j++) {
-
             int pixel_value = ROI.at<uchar>(i, j);
 
             if (pixel_value == white) { histogram[j]++; }
@@ -299,11 +278,10 @@ int_vec LineDetect::getHistogram(cv::Mat &ROI) {
     return histogram;
 }
 
-std::pair<Peak, Peak>
-LineDetect::getBaseHistogramPeaks(int_vec base_histogram,
-                                  int image_width,
-                                  int min_left_peak,
-                                  int min_right_peak) {
+std::pair<Peak, Peak> LineDetect::getBaseHistogramPeaks(int_vec base_histogram,
+                                                        int image_width,
+                                                        int min_left_peak,
+                                                        int min_right_peak) {
     // contains left and right base peaks
     std::pair<Peak, Peak> BasePeaks;
 
@@ -311,11 +289,10 @@ LineDetect::getBaseHistogramPeaks(int_vec base_histogram,
 
     // finds left base peak
     for (int i = 0; i < (base_histogram.size() / 2); i++) {
-
         if (base_histogram[i] > peak_values) {
-            peak_values = base_histogram[i];
+            peak_values              = base_histogram[i];
             BasePeaks.first.position = i;
-            BasePeaks.first.value = peak_values;
+            BasePeaks.first.value    = peak_values;
         }
     }
 
@@ -323,30 +300,27 @@ LineDetect::getBaseHistogramPeaks(int_vec base_histogram,
     // to the left edge of image to create a left base window later
     // or if left base peak is not high enough to be considered a
     // left lane line
-    if ( BasePeaks.first.position <= window_width ||
-         BasePeaks.first.value < min_left_peak) {
-
-        std::cout << "left base peak position = "
-                  << BasePeaks.first.position << std::endl
-                  << "left base peak value = "
-                  << BasePeaks.first.value << std::endl;
+    if (BasePeaks.first.position <= window_width ||
+        BasePeaks.first.value < min_left_peak) {
+        std::cout << "left base peak position = " << BasePeaks.first.position
+                  << std::endl
+                  << "left base peak value = " << BasePeaks.first.value
+                  << std::endl;
 
         throw LineDetect::NoBasePeaks;
     }
 
     else {
-
         peak_values = 0;
 
         // finds right base peak
         for (auto i = (int) (base_histogram.size() / 2);
-             i < base_histogram.size(); i++) {
-
+             i < base_histogram.size();
+             i++) {
             if (base_histogram[i] > peak_values) {
-
-                peak_values  = base_histogram[i];
+                peak_values               = base_histogram[i];
                 BasePeaks.second.position = i;
-                BasePeaks.second.value = peak_values;
+                BasePeaks.second.value    = peak_values;
             }
         }
 
@@ -356,20 +330,21 @@ LineDetect::getBaseHistogramPeaks(int_vec base_histogram,
         // right lane line
         if (BasePeaks.second.position >= (image_width - window_width) ||
             BasePeaks.second.value < min_right_peak) {
-
             std::cout << "right base peak position = "
                       << BasePeaks.second.position << std::endl
-                      << "right base peak value = "
-                      << BasePeaks.second.value << std::endl;
+                      << "right base peak value = " << BasePeaks.second.value
+                      << std::endl;
 
             throw LineDetect::NoBasePeaks;
         }
 
-        else { return BasePeaks; }
+        else {
+            return BasePeaks;
+        }
     }
 }
 
-cv::Mat LineDetect::getWindowSlice(cv::Mat &filtered_image,
+cv::Mat LineDetect::getWindowSlice(cv::Mat& filtered_image,
                                    Window BaseWindow,
                                    int vertical_slice_index) {
     // create window slice
@@ -388,12 +363,10 @@ Peak LineDetect::getWindowHistogramPeaks(int_vec window_histogram) {
     int peak_value = 0;
 
     for (int i = 0; i < window_histogram.size(); i++) {
-
         if (window_histogram[i] > peak_value) {
-
-            peak_value = window_histogram[i];
+            peak_value          = window_histogram[i];
             WindowPeak.position = i;
-            WindowPeak.value = peak_value;
+            WindowPeak.value    = peak_value;
         }
     }
 

@@ -21,8 +21,8 @@
 #include <image_transport/image_transport.h>
 
 // Snowbots
-#include "LineDetect.h"
 #include "IPM.h"
+#include "LineDetect.h"
 #include "sb_utils.h"
 
 using namespace ros;
@@ -39,7 +39,7 @@ class LaneFollow {
      *
      * @param filtered image
      */
-    void laneFollowCallback(const sensor_msgs::Image::ConstPtr &filteredImage);
+    void laneFollowCallback(const sensor_msgs::Image::ConstPtr& filteredImage);
 
     /**
      * Callback for the green light detection
@@ -63,7 +63,7 @@ class LaneFollow {
      *
      * @return Mat
      */
-    cv::Mat rosImageToMat(const sensor_msgs::Image::ConstPtr &image);
+    cv::Mat rosImageToMat(const sensor_msgs::Image::ConstPtr& image);
 
     /**
      * Draws windows made by LineDetect
@@ -75,7 +75,7 @@ class LaneFollow {
      *
      * @return vertical slices
      */
-    void drawWindows(cv::Mat &filtered_image,
+    void drawWindows(cv::Mat& filtered_image,
                      std::vector<std::vector<cv::Point2d>> lane_points,
                      int window_width,
                      int vertical_slices);
@@ -87,8 +87,8 @@ class LaneFollow {
      *
      * @return left and right perspective lane points
      */
-    std::vector<std::vector<Point2d>>
-    getPerspectiveLanePoints(std::vector<std::vector<cv::Point2d>> filtered_lane_points);
+    std::vector<std::vector<Point2d>> getPerspectiveLanePoints(
+    std::vector<std::vector<cv::Point2d>> filtered_lane_points);
 
     /**
      * Gets the angle of the lane intersect point from the origin point
@@ -139,10 +139,8 @@ class LaneFollow {
     double linear_vel_multiplier;
 
     // IPM filter variables
-    float ipm_base_width,
-          ipm_top_width,
-          ipm_base_displacement,
-          ipm_top_displacement;
+    float ipm_base_width, ipm_top_width, ipm_base_displacement,
+    ipm_top_displacement;
 
     // Corners of the portion of the image to be filtered
     int x1, y1;

@@ -24,15 +24,17 @@ LaneFollow::LaneFollow(int argc, char** argv, std::string node_name) {
 
     // setup topics
     std::string traffic_light_topic = "vision/activity_detected";
-    std::string input_topic  = "vision/complete_filtered_image";
-    std::string output_topic = "/cmd_vel";
+    std::string input_topic         = "vision/complete_filtered_image";
+    std::string output_topic        = "/cmd_vel";
 
     uint32_t queue_size = 1;
 
     SB_getParam(private_nh, "ipm_base_width", ipm_base_width, (float) 1);
     SB_getParam(private_nh, "ipm_top_width", ipm_top_width, (float) 0.5);
-    SB_getParam(private_nh, "ipm_base_displacement", ipm_base_displacement, (float) 0);
-    SB_getParam(private_nh, "ipm_top_displacement", ipm_top_displacement, (float) 0.25);
+    SB_getParam(
+    private_nh, "ipm_base_displacement", ipm_base_displacement, (float) 0);
+    SB_getParam(
+    private_nh, "ipm_top_displacement", ipm_top_displacement, (float) 0.25);
     SB_getParam(private_nh,
                 "minimum_green_count_recognised",
                 minimum_green_recognised_count,
@@ -50,10 +52,10 @@ LaneFollow::LaneFollow(int argc, char** argv, std::string node_name) {
     nh.advertise<geometry_msgs::Twist>(output_topic, queue_size);
 
     angular_vel_cap = 10;
-    linear_vel_cap = 10;
+    linear_vel_cap  = 10;
 
     angular_vel_multiplier = 1;
-    linear_vel_multiplier = 1;
+    linear_vel_multiplier  = 1;
 }
 
 void LaneFollow::greenLightCallBack(
@@ -61,7 +63,8 @@ const std_msgs::Bool& green_light_detected) {
     if (green_light_detected.data) { green_count_recognised++; }
 }
 
-void LaneFollow::laneFollowCallback(const sensor_msgs::Image::ConstPtr &filteredImage) {
+void LaneFollow::laneFollowCallback(
+const sensor_msgs::Image::ConstPtr& filteredImage) {
     if (!receivedFirstImage) {
         ros::NodeHandle private_nh("~");
 
@@ -138,8 +141,7 @@ void LaneFollow::laneFollowCallback(const sensor_msgs::Image::ConstPtr &filtered
             stay_in_lane.angular.z = angular_vel_cap;
 
         // set robot velocity to max if it is not turning
-        if (stay_in_lane.angular.z == 0)
-            stay_in_lane.linear.x = linear_vel_cap;
+        if (stay_in_lane.angular.z == 0) stay_in_lane.linear.x = linear_vel_cap;
 
         // figure out robot velocity if it is turning
         else {
@@ -163,37 +165,35 @@ void LaneFollow::laneFollowCallback(const sensor_msgs::Image::ConstPtr &filtered
         stay_in_lane_pub.publish(stay_in_lane);
     }
 
-    catch (std::exception &e) {
+    catch (std::exception& e) {
         std::cout << e.what() << std::endl;
         return;
     }
 }
 
-cv::Mat LaneFollow::rosImageToMat(const sensor_msgs::Image::ConstPtr &image) {
+cv::Mat LaneFollow::rosImageToMat(const sensor_msgs::Image::ConstPtr& image) {
     cv_bridge::CvImagePtr imagePtr;
     imagePtr = cv_bridge::toCvCopy(image, image->encoding);
     return imagePtr->image;
 }
 
-void LaneFollow::drawWindows(cv::Mat &filtered_image,
-                 std::vector<std::vector<cv::Point2d>> lane_points,
-                 int window_width,
-                 int vertical_slices) {
-
-    for (auto &lane_point : lane_points) {
-
-        for (auto &j : lane_point) {
+void LaneFollow::drawWindows(cv::Mat& filtered_image,
+                             std::vector<std::vector<cv::Point2d>> lane_points,
+                             int window_width,
+                             int vertical_slices) {
+    for (auto& lane_point : lane_points) {
+        for (auto& j : lane_point) {
             // make sure all lane points are in 1st quadrant
             // in the cartesian coordinate frame
             assert(j.x >= 0 && j.y >= 0);
 
             cv::Point2d top_left_vertex = {
-                    j.x - window_width + (filtered_image.rows / vertical_slices) / 2,
-                    j.y - window_width + (filtered_image.rows / vertical_slices) / 2};
+            j.x - window_width + (filtered_image.rows / vertical_slices) / 2,
+            j.y - window_width + (filtered_image.rows / vertical_slices) / 2};
 
             cv::Point2d bottom_right_vertex = {
-                    j.x + window_width - (filtered_image.rows / vertical_slices) / 2,
-                    j.y + window_width - (filtered_image.rows / vertical_slices) / 2};
+            j.x + window_width - (filtered_image.rows / vertical_slices) / 2,
+            j.y + window_width - (filtered_image.rows / vertical_slices) / 2};
 
             cv::rectangle(filtered_image,
                           top_left_vertex,
@@ -207,17 +207,16 @@ void LaneFollow::drawWindows(cv::Mat &filtered_image,
     cv::waitKey(100);
 }
 
-std::vector<std::vector<Point2d>>
-LaneFollow::getPerspectiveLanePoints(std::vector<std::vector<cv::Point2d>> filtered_lane_points) {
+std::vector<std::vector<Point2d>> LaneFollow::getPerspectiveLanePoints(
+std::vector<std::vector<cv::Point2d>> filtered_lane_points) {
     // contains left and right lane points in perspective
     std::vector<std::vector<Point2d>> perspective_lane_points(
     filtered_lane_points.size(), std::vector<cv::Point2d>());
 
     for (int i = 0; i < filtered_lane_points.size(); i++) {
-
         for (int j = 0; j < filtered_lane_points[i].size(); j++) {
-
-            cv::Point2d point = ipm.applyHomographyInv(filtered_lane_points[i][j]);
+            cv::Point2d point =
+            ipm.applyHomographyInv(filtered_lane_points[i][j]);
 
             perspective_lane_points[i].push_back(point);
         }
@@ -226,9 +225,10 @@ LaneFollow::getPerspectiveLanePoints(std::vector<std::vector<cv::Point2d>> filte
     return perspective_lane_points;
 }
 
-double LaneFollow::getAngleFromOriginToIntersectPoint(cv::Point2d lane_intersect_point) {
-    double x  = lane_intersect_point.x;
-    double y  = lane_intersect_point.y;
+double LaneFollow::getAngleFromOriginToIntersectPoint(
+cv::Point2d lane_intersect_point) {
+    double x = lane_intersect_point.x;
+    double y = lane_intersect_point.y;
 
     double dx = x - origin_point;
 

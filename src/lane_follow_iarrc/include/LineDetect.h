@@ -8,9 +8,9 @@
 #ifndef LANE_FOLLOW_LINEDETECT_H
 #define LANE_FOLLOW_LINEDETECT_H
 
-#include <opencv2/core.hpp>
 #include <exception>
 #include <iostream>
+#include <opencv2/core.hpp>
 
 using namespace cv;
 
@@ -85,8 +85,9 @@ class LineDetect {
      *
      * @return left and right lane points
      */
-    std::vector<std::vector<cv::Point2d>>
-    getLanePoints(cv::Mat& filtered_image, int min_left_peak, int min_right_peak);
+    std::vector<std::vector<cv::Point2d>> getLanePoints(cv::Mat& filtered_image,
+                                                        int min_left_peak,
+                                                        int min_right_peak);
 
     /**
      * Creates two base windows to cover left and right lanes
@@ -108,7 +109,7 @@ class LineDetect {
      *
      * @return histogram
      */
-    int_vec getHistogram(cv::Mat &ROI);
+    int_vec getHistogram(cv::Mat& ROI);
 
     /**
      * Finds the base histogram's peak positions
@@ -119,11 +120,10 @@ class LineDetect {
      * @param base histogram
      * @return peak location indices
      */
-    std::pair<Peak, Peak>
-    getBaseHistogramPeaks(int_vec base_histogram,
-                          int image_width,
-                          int min_left_peak,
-                          int min_right_peak);
+    std::pair<Peak, Peak> getBaseHistogramPeaks(int_vec base_histogram,
+                                                int image_width,
+                                                int min_left_peak,
+                                                int min_right_peak);
 
     /**
      * Creates a window by slicing the left/right base window bottom up
@@ -134,7 +134,7 @@ class LineDetect {
      *
      * @return window slice
      */
-    cv::Mat getWindowSlice(cv::Mat &filtered_image,
+    cv::Mat getWindowSlice(cv::Mat& filtered_image,
                            Window BaseWindow,
                            int vertical_slice_index);
 
