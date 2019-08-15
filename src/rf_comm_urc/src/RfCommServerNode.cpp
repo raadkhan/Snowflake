@@ -16,14 +16,14 @@ RfCommServer::RfCommServer(int argc, char **argv, std::string node_name) {
     ros::NodeHandle private_nh("~");
 
     // Setup Subscriber(s)
-    std::string topic_to_subscribe_to = "client";
+    std::string topic_to_subscribe_to = "rf_comm_client_node/client";
     int queue_size                    = 10;
     client_subscriber                     = nh.subscribe(
             topic_to_subscribe_to, queue_size, &RfCommServer::ClientCommandCallBack, this);
 
     // Setup Publisher(s)
     std::string topic = private_nh.resolveName("server");
-    queue_size        = 1;
+    queue_size        = 10;
     server_publisher = private_nh.advertise<std_msgs::String>(topic, queue_size);
 }
 
